@@ -1,0 +1,6 @@
+E:\Projects\3DGraphing\ModelConverter\Convertor\Main\bin\Debug\Main.exe.config
+E:\Projects\3DGraphing\ModelConverter\Convertor\Main\obj\Debug\Main.csprojResolveAssemblyReference.cache
+E:\Projects\3DGraphing\ModelConverter\Convertor\Main\bin\Debug\Main.exe
+E:\Projects\3DGraphing\ModelConverter\Convertor\Main\bin\Debug\Main.pdb
+E:\Projects\3DGraphing\ModelConverter\Convertor\Main\obj\Debug\Main.exe
+E:\Projects\3DGraphing\ModelConverter\Convertor\Main\obj\Debug\Main.pdb
