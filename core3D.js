@@ -4,6 +4,7 @@ function Core3D(canvas, drawingMode, fullScreenMode) {
   this.__vertices = [];
   this.__indices = [];
   this.__faces = [];
+  this.__objects = [];
   this.__drawingMode = drawingMode;
   
   if (fullScreenMode) {
@@ -22,6 +23,7 @@ Core3D.DrawingMode = {
 Core3D.prototype = {
   __canvas: null,
   __ctx: null,
+  __objects: null,
   __vertices: null,
   __indices: null,
   __faces: null,
@@ -29,14 +31,15 @@ Core3D.prototype = {
   __drawingMode: null,
   
   start: function() {
-    this.__pid = setInterval(
-      (function(self) {
-        return function() {
-          self.__update();
-        }
-      })(this),
-      1
-    );
+    this.__update();
+   // this.__pid = setInterval(
+   //   (function(self) {
+   //     return function() {
+   //       self.__update();
+   //     }
+   //   })(this),
+   //   1
+   // );
   },
   
   __update: function() {
@@ -50,72 +53,88 @@ Core3D.prototype = {
       this.__rotateZ(v, .01);
     }
     
-    
-    if (this.__drawingMode === Core3D.DrawingMode.Wire) {
-    
-      for (index = 0; index < this.__indices.length; index++) {
-        var v = this.__vertices[this.__indices[index]];
-        var cp = this.__toCP(v);
+    for (var i = 0; i < this.__objects.length; i++) {
+      var obj = this.__objects[i];
+      this.__indices = obj.indices;
+      this.__vertices = obj.vertices;
+      this.__faces = obj.faces;
+      
+      if (this.__drawingMode === Core3D.DrawingMode.Wire) {
+      
+        for (index = 0; index < this.__indices.length; index++) {
+          var v = this.__vertices[this.__indices[index]];
+          var cp = this.__toCP(v);
+          
+          //this.__drawPoint(cx, cy, 5, 5);
+          this.__ctx.lineTo(cp.x, cp.y, 2);
+        //  this.__ctx.fill();
+        }
+        this.__ctx.stroke();
         
-        //this.__drawPoint(cx, cy, 5, 5);
-        this.__ctx.lineTo(cp.x, cp.y, 2);
-      //  this.__ctx.fill();
-      }
-      this.__ctx.stroke();
+      } else if (this.__drawingMode === Core3D.DrawingMode.Triangle) {
+        
+        // Painter's Algorithm
+        this.__faces.sort(this.__sortFacesTriangle);
       
-    } else if (this.__drawingMode === Core3D.DrawingMode.Triangle) {
+        for (index = 0; index < this.__faces.length; index++) {
+         var v0 = this.__toCP(this.__faces[index].v0);
+         var v1 = this.__toCP(this.__faces[index].v1);
+         var v2 = this.__toCP(this.__faces[index].v2);
+         
+         this.__ctx.beginPath();
+         this.__ctx.lineTo(v0.x, v0.y);
+         this.__ctx.lineTo(v1.x, v1.y);
+         this.__ctx.lineTo(v2.x, v2.y);
+         this.__ctx.closePath();
+         
+         
+         this.__ctx.fillStyle = "rgba(255, 0, 0, .8)";
+         this.__ctx.fill();
+         this.__ctx.strokeStyle = 'green';
+         this.__ctx.stroke();
+         // this.__drawPoint(cx, cy, 5, 5);
+         //this.__ctx.lineTo(cx, cy);
+        }
       
-      // Painter's Algorithm
-      this.__faces.sort(this.__sortFacesTriangle);
-    
-      for (index = 0; index < this.__faces.length; index++) {
-       var v0 = this.__toCP(this.__faces[index].v0);
-       var v1 = this.__toCP(this.__faces[index].v1);
-       var v2 = this.__toCP(this.__faces[index].v2);
-       
-       this.__ctx.beginPath();
-       this.__ctx.lineTo(v0.x, v0.y);
-       this.__ctx.lineTo(v1.x, v1.y);
-       this.__ctx.lineTo(v2.x, v2.y);
-       this.__ctx.closePath();
-       
-       
-       this.__ctx.fillStyle = "rgba(255, 0, 0, .8)";
-       this.__ctx.fill();
-       this.__ctx.strokeStyle = 'green';
-       this.__ctx.stroke();
-       // this.__drawPoint(cx, cy, 5, 5);
-       //this.__ctx.lineTo(cx, cy);
-      }
-    
-    
-    } else if (this.__drawingMode === Core3D.DrawingMode.Quad) {
       
-      // Painter's Algorithm
-      this.__faces.sort(this.__sortFacesQuad);
-    
-      for (index = 0; index < this.__faces.length; index++) {
-       var v0 = this.__toCP(this.__faces[index].v0);
-       var v1 = this.__toCP(this.__faces[index].v1);
-       var v2 = this.__toCP(this.__faces[index].v2);
-       var v3 = this.__toCP(this.__faces[index].v3);
-       
-       this.__ctx.beginPath();
-       this.__ctx.lineTo(v0.x, v0.y);
-       this.__ctx.lineTo(v1.x, v1.y);
-       this.__ctx.lineTo(v2.x, v2.y);
-       this.__ctx.lineTo(v3.x, v3.y);
-       this.__ctx.closePath();
-       
-       
-       this.__ctx.fillStyle = "rgba(255, 0, 0, 1)";
-       this.__ctx.fill();
-       this.__ctx.strokeStyle = 'blue';
-       this.__ctx.stroke();
-       // this.__drawPoint(cx, cy, 5, 5);
-       //this.__ctx.lineTo(cx, cy);
+      } else if (this.__drawingMode === Core3D.DrawingMode.Quad) {
+        
+        // Painter's Algorithm
+        this.__faces.sort(this.__sortFacesQuad);
+      
+        for (index = 0; index < this.__faces.length; index++) {
+         var v0 = this.__toCP(this.__faces[index].v0);
+         var v1 = this.__toCP(this.__faces[index].v1);
+         var v2 = this.__toCP(this.__faces[index].v2);
+         var v3 = this.__toCP(this.__faces[index].v3);
+         
+         this.__ctx.beginPath();
+         this.__ctx.lineTo(v0.x, v0.y);
+         this.__ctx.lineTo(v1.x, v1.y);
+         this.__ctx.lineTo(v2.x, v2.y);
+         this.__ctx.lineTo(v3.x, v3.y);
+         this.__ctx.closePath();
+         
+         
+         this.__ctx.fillStyle = "rgba(255, 0, 0, 1)";
+         this.__ctx.fill();
+         this.__ctx.strokeStyle = 'blue';
+         this.__ctx.stroke();
+         // this.__drawPoint(cx, cy, 5, 5);
+         //this.__ctx.lineTo(cx, cy);
+        }
       }
     }
+
+    this.__pid = setTimeout(
+      (function(self) {
+        return function() {
+          self.__update();
+        }
+      })(this),
+      1
+    );
+
   },
   
   __sortFacesQuad(f0, f1) {
@@ -171,35 +190,30 @@ Core3D.prototype = {
     v.x = Math.cos(t) * x - Math.sin(t) * y;
     v.y = Math.sin(t) * x + Math.cos(t) * y;
   },
-  
-  set_vertices: function(vertices) {
-    this.__vertices = vertices;
-  },
-  
-  set_indices: function(indices) {
-    this.__indices = indices;
-    
+
+  addObject(obj) {
+    this.__objects.push(obj);
+    obj.faces = [];
     if (this.__drawingMode === Core3D.DrawingMode.Triangle) {
-      for (index = 0; index < this.__indices.length; index += 3) {
-        var v0 = this.__vertices[this.__indices[index]];
-        var v1 = this.__vertices[this.__indices[index + 1]];
-        var v2 = this.__vertices[this.__indices[index + 2]];
+      for (index = 0; index < obj.indices.length; index += 3) {
+        var v0 = obj.vertices[obj.indices[index]];
+        var v1 = obj.vertices[obj.indices[index + 1]];
+        var v2 = obj.vertices[obj.indices[index + 2]];
         
         var face = {v0 : v0, v1 : v1, v2 : v2};
-        this.__faces.push(face);
+        obj.faces.push(face);
       }
       
     } else if (this.__drawingMode === Core3D.DrawingMode.Quad) {
-      for (index = 0; index < this.__indices.length; index += 4) {
-        var v0 = this.__vertices[this.__indices[index]];
-        var v1 = this.__vertices[this.__indices[index + 1]];
-        var v2 = this.__vertices[this.__indices[index + 2]];
-        var v3 = this.__vertices[this.__indices[index + 3]];
+      for (index = 0; index < obj.indices.length; index += 4) {
+        var v0 = obj.vertices[obj.indices[index]];
+        var v1 = obj.vertices[obj.indices[index + 1]];
+        var v2 = obj.vertices[obj.indices[index + 2]];
+        var v3 = obj.vertices[obj.indices[index + 3]];
         
-        var face = {v0 : v0, v1 : v1, v2 : v2, v3 : v3};
-        this.__faces.push(face);
+        var face = {v0 : v0, v1 : v1, v2 : v2, v3: v3};
+        obj.faces.push(face);
       }
     }
   }
-  
 }
