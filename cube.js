@@ -1,14 +1,15 @@
 function Cube(w) {
-  this.vertices = [
-     {x: -w, y: -w, z: -w},  //0
-     {x: w, y: -w, z: -w},   //1
-     {x: w, y: w, z: -w},   //2
-     {x: -w, y: w, z: -w},    //3
-    
-     {x: -w, y: -w, z: w},   //4
-     {x: w, y: -w, z: w},    //5
-     {x: w, y: w, z: w},    //6
-     {x: -w, y: w, z: w},     //7
+  
+   this.vertices = [
+     new Vector4(-w, -w, -w, 1),
+     new Vector4(w, -w, -w, 1),
+     new Vector4(w, w, -w, 1),
+     new Vector4(-w, w, -w, 1),
+     
+     new Vector4(-w, -w, w, 1),
+     new Vector4(w, -w, w, 1),
+     new Vector4(w, w, w, 1),
+     new Vector4(-w, w, w, 1),
    ];
     
    this.indices = [
@@ -19,12 +20,25 @@ function Cube(w) {
      5, 1, 2, 6,
      6, 7, 3, 2,
    ];
-
-
+   
+   this.base();
 }
 
 Cube.prototype = {
-  indices: null,
   vertices: null,
-  faces: null
+  indices: null,
+  
+  update: function() {
+
+    // this.__thetaX += .001;
+    // this.__thetaY += .001;
+    // this.__thetaZ += .001;
+    
+    // this.setRotation(this.__thetaX, 0, 0);
+
+    
+    this.base.prototype.update.apply(this);
+  }
 }
+
+inherit(Object, Cube);
